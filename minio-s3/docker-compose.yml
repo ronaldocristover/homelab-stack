@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   minio:
@@ -15,8 +14,8 @@ services:
       - MINIO_CONSOLE_PORT=${MINIO_CONSOLE_PORT}
       - MINIO_BROWSER_PORT=${MINIO_BROWSER_PORT}
     volumes:
-      - minio_data1:/data
-      - minio_data2:/data2
+      - ${MINIO_DATA_DIR1}:/data
+      - ${MINIO_DATA_DIR2}:/data2
     command: server /data /data2 --console-address ":${MINIO_CONSOLE_PORT}" --browser-address ":${MINIO_BROWSER_PORT}"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
