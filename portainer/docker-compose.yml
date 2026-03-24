@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "9443:9443"  # HTTPS UI
+      - "9000:9000"  # HTTP UI
+      - "8000:8000"  # Edge agent communications
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - portainer_network
+
+networks:
+  portainer_network:
+    driver: bridge
+
+volumes:
+  portainer_data:
