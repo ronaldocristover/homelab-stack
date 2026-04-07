@@ -21,6 +21,7 @@ services:
             start_period: 15s
         networks:
             - minio_network
+            - global-network
 
     minio-init:
         image: minio/mc:latest
@@ -38,7 +39,10 @@ services:
         command: -c "sleep 5 && /scripts/create-buckets.sh"
         networks:
             - minio_network
+            - global-network
 
 networks:
     minio_network:
         driver: bridge
+    global-network:
+        external: true
