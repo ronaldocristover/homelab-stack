@@ -3,46 +3,50 @@ services:
         image: minio/minio:latest
         container_name: minio
         restart: unless-stopped
+        command: server /data --console-address ":${MINIO_CONSOLE_PORT:-9001}"
         ports:
-            - "${MINIO_API_PORT:-9003}:9003"
+            - "${MINIO_API_PORT:-9000}:9000"
             - "${MINIO_CONSOLE_PORT:-9001}:9001"
         environment:
-            - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-            - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+            MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+            MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+            MINIO_VOLUMES: /data
+            # Optional: set region
+            # MINIO_SITE_REGION: ap-southeast-1
         volumes:
-            - ${MINIO_DATA_DIR1}:/data
-            - ${MINIO_DATA_DIR2}:/data2
-        command: server /data /data2 --console-address ":9001"
+            - ${MINIO_DATA_DIR1:-./data}:/data
         healthcheck:
-            test: ["CMD", "mc", "ready", "local"]
+            test:
+                ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
             interval: 30s
-            timeout: 20s
+            timeout: 10s
             retries: 3
-            start_period: 15s
+            start_period: 10s
         networks:
-            - minio_network
-            - global-network
+            - minio_net
 
+    # Optional: create default bucket on startup
     minio-init:
         image: minio/mc:latest
         container_name: minio-init
         depends_on:
             minio:
                 condition: service_healthy
+        entrypoint: >
+            /bin/sh -c "
+              mc alias set local http://minio:${MINIO_API_PORT:-9000} $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
+              mc mb --ignore-existing local/my-bucket;
+              mc anonymous set download local/my-bucket;
+              echo 'MinIO init done.';
+              exit 0;
+            "
         environment:
-            - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-            - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
-            - MINIO_API_PORT=${MINIO_API_PORT:-9003}
-        volumes:
-            - ./scripts:/scripts
-        entrypoint: /bin/sh
-        command: -c "sleep 5 && /scripts/create-buckets.sh"
+            MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+            MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+            MINIO_API_PORT: ${MINIO_API_PORT:-9000}
         networks:
-            - minio_network
-            - global-network
+            - minio_net
 
 networks:
-    minio_network:
+    minio_net:
         driver: bridge
-    global-network:
-        external: true
