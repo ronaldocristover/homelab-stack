@@ -4,7 +4,7 @@ services:
         container_name: minio
         restart: unless-stopped
         ports:
-            - "${MINIO_API_PORT:-9003}:9000"
+            - "${MINIO_API_PORT:-9003}:9003"
             - "${MINIO_CONSOLE_PORT:-9001}:9001"
         environment:
             - MINIO_ROOT_USER=${MINIO_ROOT_USER}
