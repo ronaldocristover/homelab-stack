@@ -24,6 +24,7 @@ services:
             start_period: 10s
         networks:
             - minio_net
+            - global-network
 
     # Optional: create default bucket on startup
     minio-init:
@@ -46,7 +47,10 @@ services:
             MINIO_API_PORT: ${MINIO_API_PORT:-9000}
         networks:
             - minio_net
+            - global-network
 
 networks:
     minio_net:
         driver: bridge
+    global-network:
+        external: true
