@@ -2,7 +2,7 @@ FROM rclone/rclone:1 AS rclone
 
 FROM mysql:8.0
 
-RUN microdnf install -y cronie gzip curl logrotate rsync && microdnf clean all
+RUN microdnf install -y cronie gzip curl jq logrotate rsync && microdnf clean all
 
 COPY --from=rclone /usr/local/bin/rclone /usr/bin/rclone
 

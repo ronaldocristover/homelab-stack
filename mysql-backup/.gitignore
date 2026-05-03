@@ -1,4 +1,7 @@
 backups/*
 backups-hdd/*
 .env
+.env.prod
+servers.json
+servers.prod.json
 *.sql

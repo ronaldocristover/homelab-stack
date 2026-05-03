@@ -1,0 +1,20 @@
+[
+  {
+    "name": "prod-primary",
+    "host": "mysql-prod-1.example.com",
+    "port": 3306,
+    "user": "backup_user",
+    "pass": "CHANGE_ME",
+    "s3_path": "prod-primary-backup",
+    "databases": ["app_db", "users_db"]
+  },
+  {
+    "name": "prod-analytics",
+    "host": "mysql-prod-2.example.com",
+    "port": 3306,
+    "user": "backup_user",
+    "pass": "CHANGE_ME",
+    "s3_path": "analytics-backup",
+    "databases": ["analytics_db", "events_db", "metrics_db"]
+  }
+]

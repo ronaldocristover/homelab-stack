@@ -5,11 +5,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      - DB_SERVER=${DB_SERVER:-mysql-host}
-      - DB_PORT=${DB_PORT:-3306}
-      - DB_USER=${DB_USER:-backup_user}
-      - DB_PASS=${DB_PASS:-backup_password}
-      - DB_NAMES=${DB_NAMES:-db1 db2 db3}
+      - SERVERS_FILE=/config/servers.json
       - DB_CLEANUP=${DB_CLEANUP:-true}
       - CLEANUP_TIME=${CLEANUP_TIME:-604800}
       - TZ=${TZ:-UTC}
@@ -32,6 +28,7 @@ services:
     volumes:
       - ./backups:/backups
       - ${HDD_MOUNT_PATH:-./backups-hdd}:/backups-hdd
+      - ./servers.json:/config/servers.json:ro
     networks:
       - mysql-network
 

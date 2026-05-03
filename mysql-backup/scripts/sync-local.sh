@@ -6,6 +6,7 @@ if [ "${LOCAL_BACKUP_ENABLED:-false}" != "true" ]; then
   exit 0
 fi
 
+SERVERS_FILE="${SERVERS_FILE:-/config/servers.json}"
 LOCAL_DIR=/backups-hdd
 BACKUP_DIR=/backups
 START_TIME=$(date +%s)
@@ -15,19 +16,31 @@ echo "[$(date)] LOCAL HDD SYNC STARTED"
 echo "[$(date)] Destination: $LOCAL_DIR"
 echo "=========================================="
 
-IFS=' ' read -ra DATABASES <<< "$DB_NAMES"
 ERRORS=()
 
-for DB in "${DATABASES[@]}"; do
-  mkdir -p "$LOCAL_DIR/$DB"
-  echo "[$(date)] Syncing $DB -> $LOCAL_DIR/$DB/"
-  if rsync -a "$BACKUP_DIR/$DB/" "$LOCAL_DIR/$DB/"; then
-    SIZE=$(du -sh "$LOCAL_DIR/$DB" | cut -f1)
-    echo "[$(date)] Sync done: $DB ($SIZE)"
-  else
-    echo "[$(date)] ERROR: Sync failed for $DB"
-    ERRORS+=("$DB")
-  fi
+if [ -f "$SERVERS_FILE" ]; then
+  SERVER_COUNT=$(jq length "$SERVERS_FILE")
+else
+  SERVER_COUNT=0
+fi
+
+for SERVER_INDEX in $(seq 0 $((SERVER_COUNT - 1))); do
+  SERVER_NAME=$(jq -r ".[$SERVER_INDEX].name" "$SERVERS_FILE")
+  DB_COUNT=$(jq ".[$SERVER_INDEX].databases | length" "$SERVERS_FILE")
+
+  for DB_INDEX in $(seq 0 $((DB_COUNT - 1))); do
+    DB=$(jq -r ".[$SERVER_INDEX].databases[$DB_INDEX]" "$SERVERS_FILE")
+    mkdir -p "$LOCAL_DIR/$SERVER_NAME/$DB"
+
+    echo "[$(date)] Syncing $SERVER_NAME/$DB -> $LOCAL_DIR/$SERVER_NAME/$DB/"
+    if rsync -a "$BACKUP_DIR/$SERVER_NAME/$DB/" "$LOCAL_DIR/$SERVER_NAME/$DB/"; then
+      SIZE=$(du -sh "$LOCAL_DIR/$SERVER_NAME/$DB" | cut -f1)
+      echo "[$(date)] Sync done: $SERVER_NAME/$DB ($SIZE)"
+    else
+      echo "[$(date)] ERROR: Sync failed for $SERVER_NAME/$DB"
+      ERRORS+=("$SERVER_NAME/$DB")
+    fi
+  done
 done
 
 if [ "${LOCAL_CLEANUP:-false}" = "true" ]; then
@@ -40,7 +53,7 @@ DURATION=$((END_TIME - START_TIME))
 
 echo "=========================================="
 if [ ${#ERRORS[@]} -eq 0 ]; then
-  echo "[$(date)] LOCAL SYNC COMPLETED in ${DURATION}s - ${#DATABASES[@]} database(s)"
+  echo "[$(date)] LOCAL SYNC COMPLETED in ${DURATION}s — $SERVER_COUNT server(s)"
 else
   echo "[$(date)] LOCAL SYNC COMPLETED in ${DURATION}s with ${#ERRORS[@]} error(s): ${ERRORS[*]}"
   exit 1
