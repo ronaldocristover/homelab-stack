@@ -1,0 +1,40 @@
+services:
+  mysql-backup:
+    build: .
+    container_name: mysql-backup
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - DB_SERVER=${DB_SERVER:-mysql-host}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_USER=${DB_USER:-backup_user}
+      - DB_PASS=${DB_PASS:-backup_password}
+      - DB_NAMES=${DB_NAMES:-db1 db2 db3}
+      - DB_CLEANUP=${DB_CLEANUP:-true}
+      - CLEANUP_TIME=${CLEANUP_TIME:-604800}
+      - TZ=${TZ:-UTC}
+      - DO_ACCESS_KEY=${DO_ACCESS_KEY:-}
+      - DO_SECRET_KEY=${DO_SECRET_KEY:-}
+      - DO_ENDPOINT=${DO_ENDPOINT:-nyc3.digitaloceanspaces.com}
+      - DO_REGION=${DO_REGION:-nyc3}
+      - DO_BUCKET=${DO_BUCKET:-}
+      - DO_PATH=${DO_PATH:-mysql}
+      - DO_CLEANUP=${DO_CLEANUP:-true}
+      - DO_CLEANUP_DAYS=${DO_CLEANUP_DAYS:-30}
+      - LOCAL_BACKUP_ENABLED=${LOCAL_BACKUP_ENABLED:-false}
+      - LOCAL_CLEANUP=${LOCAL_CLEANUP:-true}
+      - LOCAL_CLEANUP_DAYS=${LOCAL_CLEANUP_DAYS:-90}
+      - ALERT_WEBHOOK_URL=${ALERT_WEBHOOK_URL:-}
+      - ALERT_HOSTNAME=${ALERT_HOSTNAME:-}
+      - GIF_URL_SUCCESS=${GIF_URL_SUCCESS:-}
+      - GIF_URL_WARNING=${GIF_URL_WARNING:-}
+      - GIF_URL_FAILURE=${GIF_URL_FAILURE:-}
+    volumes:
+      - ./backups:/backups
+      - ${HDD_MOUNT_PATH:-./backups-hdd}:/backups-hdd
+    networks:
+      - mysql-network
+
+networks:
+  mysql-network:
+    driver: bridge
