@@ -23,6 +23,7 @@ access_key_id = ${DO_ACCESS_KEY}
 secret_access_key = ${DO_SECRET_KEY}
 endpoint = ${DO_ENDPOINT}
 region = ${DO_REGION}
+no_check_bucket = true
 EOF
 
 echo "=========================================="
@@ -37,7 +38,7 @@ for DB in "${DATABASES[@]}"; do
   echo "[$(date)] Uploading $DB..."
   if rclone copy "$BACKUP_DIR/$DB/" "spaces:$DO_BUCKET/$DO_PATH/$DB/" \
     --include "*.sql.gz" \
-    --checksum \
+    --ignore-checksum \
     --transfers 4; then
     echo "$DB|ok" >> "$RESULTS_FILE"
     echo "[$(date)] Upload done: $DB"

@@ -7,14 +7,14 @@ set -euo pipefail
 BACKUP_OK=false
 UPLOAD_OK=false
 
-if /backup.sh >> /var/log/backup.log 2>&1; then
+if /scripts/backup.sh >> /var/log/backup.log 2>&1; then
   BACKUP_OK=true
 fi
 
 if [ "$BACKUP_OK" = "true" ]; then
-  /sync-local.sh >> /var/log/sync-local.log 2>&1 || true
+  /scripts/sync-local.sh >> /var/log/sync-local.log 2>&1 || true
 
-  if /upload.sh >> /var/log/upload.log 2>&1; then
+  if /scripts/upload.sh >> /var/log/upload.log 2>&1; then
     UPLOAD_OK=true
   fi
 fi
@@ -87,7 +87,7 @@ fi
 PAYLOAD=$(printf '{"embeds":[{"title":"%s","description":"%s","color":%d,"fields":[{"name":"⚾ Pokéball Throws","value":"%s","inline":false},{"name":"💻 PC Storage (S3)","value":"%s","inline":false}],"footer":{"text":"Gotta back em all! 🎮"},"timestamp":"%s"%s}]}' \
   "$TITLE" "$DESC" "$COLOR" "$BACKUP_VALUE" "$UPLOAD_VALUE" "$NOW" "$IMAGE_JSON")
 
-/notify.sh --json "$PAYLOAD" || true
+/scripts/notify.sh --json "$PAYLOAD" || true
 
 if [ "$BACKUP_OK" = "false" ] || [ "$UPLOAD_OK" = "false" ]; then
   exit 1
