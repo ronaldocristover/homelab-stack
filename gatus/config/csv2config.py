@@ -145,14 +145,18 @@ def main():
     args = parser.parse_args()
 
     csv_path = Path(args.input)
-    if not csv_path.exists():
-        print(f"Error: {csv_path} not found", file=sys.stderr)
-        sys.exit(1)
+    if csv_path.exists() and csv_path.stat().st_size > 0:
+        endpoints = read_csv(str(csv_path))
+    else:
+        endpoints = []
 
-    endpoints = read_csv(str(csv_path))
     if not endpoints:
-        print("No valid endpoints found in CSV.", file=sys.stderr)
-        sys.exit(1)
+        endpoints.append({
+            "name": "placeholder",
+            "url": "https://example.org",
+            "interval": "5m",
+            "conditions": ["[STATUS] == 200"],
+        })
 
     config = build_config(endpoints)
 

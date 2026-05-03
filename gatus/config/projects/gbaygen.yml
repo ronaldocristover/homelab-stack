@@ -1,0 +1,5 @@
+project: gbaygen
+services:
+  portal: gbaygen.org
+  api: api.gbaygen.org
+  admin: admin.gbaygen.org

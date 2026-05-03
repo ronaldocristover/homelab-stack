@@ -1,5 +1,0 @@
-project: hkccc-dev
-services:
-  portal: hkccc-dev-portal.gbempower.asia
-  api: hkccc-dev-api.gbempower.asia
-  admin: hkccc-dev-admin.gbempower.asia

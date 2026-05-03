@@ -1,0 +1,3 @@
+project: hkccc
+services:
+  payment: hkccc-payment.gbempower.asia

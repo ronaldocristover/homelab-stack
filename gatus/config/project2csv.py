@@ -64,7 +64,10 @@ def build_rows(data: dict) -> list[dict]:
     rows = []
     for service, domain in data["services"].items():
         name = f"{project}-{service}"
-        url = f"{protocol}://{domain}"
+        if domain.startswith("http://") or domain.startswith("https://"):
+            url = domain
+        else:
+            url = f"{protocol}://{domain}"
         desc = description_template.format(name=name, url=url, group=project)
         rows.append({
             "name": name,
@@ -83,12 +86,15 @@ def build_rows(data: dict) -> list[dict]:
 
 def write_csv(rows: list[dict], path: str, append: bool = False) -> None:
     file_exists = Path(path).exists() and Path(path).stat().st_size > 0
-    mode = "a" if append and file_exists else "w"
-    with open(path, mode, newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=FIELDS)
-        if not (append and file_exists):
+    if append and file_exists:
+        with open(path, "a", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
+            writer.writerows(rows)
+    else:
+        with open(path, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
             writer.writeheader()
-        writer.writerows(rows)
+            writer.writerows(rows)
 
 
 def main():
@@ -102,8 +108,12 @@ def main():
     data = load_project(args.input)
     rows = build_rows(data)
 
+    if args.append and args.output == "endpoints.csv":
+        print("Error: -o/--output is required when using -a/--append", file=sys.stderr)
+        sys.exit(1)
+
     if args.dry_run:
-        writer = csv.DictWriter(sys.stdout, fieldnames=FIELDS)
+        writer = csv.DictWriter(sys.stdout, fieldnames=FIELDS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     else:

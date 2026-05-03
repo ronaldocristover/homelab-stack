@@ -1,0 +1,5 @@
+project: fireclub
+services:
+  www: https://www.fireclub.com.hk/
+  api: http://api.fireclub.com.hk/
+  admin: http://admin.fireclub.com.hk/

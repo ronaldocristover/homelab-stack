@@ -1,0 +1,5 @@
+project: stage-edu-net
+services:
+  admin: admin.stageedunetfoundation.com
+  member: member.stageedunetfoundation.com
+  api: api.stageedunetfoundation.com
