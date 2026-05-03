@@ -3,6 +3,5 @@ services:
     container_name: mysql-backup-prod
     env_file: .env.prod
     volumes:
-      - ./backups:/backups
       - ${HDD_MOUNT_PATH:-./backups-hdd}:/backups-hdd
       - ./servers.prod.json:/config/servers.json:ro

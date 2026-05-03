@@ -1,0 +1,8 @@
+backups/
+backups-hdd/
+.git/
+.env
+.env.prod
+servers.json
+servers.prod.json
+*.sql

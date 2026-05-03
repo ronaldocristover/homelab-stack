@@ -1,4 +1,4 @@
 SHELL=/bin/bash
-0 */4 * * * /scripts/backup.sh >> /var/log/backup.log 2>&1; /scripts/sync-local.sh >> /var/log/sync-local.log 2>&1
+0 */4 * * * /scripts/backup.sh >> /var/log/backup.log 2>&1
 0 0,12 * * * /scripts/upload.sh >> /var/log/upload.log 2>&1
 0 0 * * 0 logrotate /etc/logrotate.d/mysql-backup

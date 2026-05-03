@@ -12,7 +12,7 @@ fi
 SERVERS_FILE="${SERVERS_FILE:-/config/servers.json}"
 > "$RESULTS_FILE"
 
-BACKUP_DIR=/backups
+BACKUP_DIR=/backups-hdd
 START_TIME=$(date +%s)
 
 mkdir -p /root/.config/rclone

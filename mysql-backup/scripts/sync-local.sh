@@ -7,8 +7,7 @@ if [ "${LOCAL_BACKUP_ENABLED:-false}" != "true" ]; then
 fi
 
 SERVERS_FILE="${SERVERS_FILE:-/config/servers.json}"
-LOCAL_DIR=/backups-hdd
-BACKUP_DIR=/backups
+BACKUP_DIR=/backups-hdd
 START_TIME=$(date +%s)
 
 echo "=========================================="

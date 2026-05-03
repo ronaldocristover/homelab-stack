@@ -26,7 +26,6 @@ services:
       - GIF_URL_WARNING=${GIF_URL_WARNING:-}
       - GIF_URL_FAILURE=${GIF_URL_FAILURE:-}
     volumes:
-      - ./backups:/backups
       - ${HDD_MOUNT_PATH:-./backups-hdd}:/backups-hdd
       - ./servers.json:/config/servers.json:ro
     networks:

@@ -3,7 +3,7 @@ set -euo pipefail
 
 SERVERS_FILE="${SERVERS_FILE:-/config/servers.json}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR=/backups
+BACKUP_DIR=/backups-hdd
 START_TIME=$(date +%s)
 RESULTS_FILE="${BACKUP_RESULTS_FILE:-/tmp/backup_results}"
 > "$RESULTS_FILE"
