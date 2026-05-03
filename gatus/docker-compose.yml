@@ -1,0 +1,13 @@
+services:
+  gatus:
+    build: .
+    image: gatus:latest
+    container_name: gatus
+    restart: unless-stopped
+    ports:
+      - "${GATUS_PORT:-8888}:8080"
+    environment:
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+    volumes:
+      - ./config:/config
+      - ./data:/data/

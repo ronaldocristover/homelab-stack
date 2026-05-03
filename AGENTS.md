@@ -7,6 +7,7 @@ Modular Docker Compose stacks — each service lives in its own directory. There
 - `minio-s3/` — MinIO S3-compatible object storage
 - `portainer/` — Container management UI
 - `mysql-backup/` — Multi-server MySQL backup, S3 upload, local HDD sync, webhook alerts (the primary active service)
+- `gatus/` — Gatus uptime monitoring with Discord alerts; config generated from CSV via `csv2config.py`
 
 ## Commands
 
@@ -50,6 +51,39 @@ DB connections are defined in `mysql-backup/servers.json` (dev) or `mysql-backup
 ## Env Files
 
 Copy `.env.example` (or `.env-example` for portainer) to `.env` in each service directory before starting. The minio and portainer stacks have defaults baked into compose; mysql-backup requires a real `.env` to function. For production, copy `.env.example` to `.env.prod` and `servers.json.example` to `servers.prod.json`.
+
+## Gatus Config Generator
+
+Gatus endpoints are defined in `gatus/config/endpoints.csv` and converted to `gatus/config/config.yml` via `gatus/config/csv2config.py`.
+
+```bash
+python3 gatus/config/csv2config.py                        # reads endpoints.csv → config.yml
+python3 gatus/config/csv2config.py -i endpoints.csv -o config.yml  # explicit paths
+python3 gatus/config/csv2config.py --dry-run              # print to stdout
+```
+
+CSV columns: `name`, `group`, `type` (http/tcp/dns/icmp), `url`, `interval`, `conditions` (pipe-separated), `alert_description`, plus optional `dns_query_name`, `dns_query_type`, `dns_expected_body` for DNS endpoints. See `gatus/config/endpoints.example.csv` for a working example.
+
+### Quick project generator (YAML → CSV)
+
+For simple HTTP-200 checks per project, define a YAML file in `gatus/config/projects/`:
+
+```yaml
+project: hkccc-dev
+services:
+  portal: hkccc-dev-portal.gbempower.asia
+  api: hkccc-dev-api.gbempower.asia
+```
+
+Then generate CSV rows and feed them into `csv2config.py`:
+
+```bash
+python3 gatus/config/project2csv.py -i gatus/config/projects/hkccc-dev.yml          # writes endpoints.csv
+python3 gatus/config/project2csv.py -i gatus/config/projects/hkccc-dev.yml -a        # append to existing CSV
+python3 gatus/config/project2csv.py -i gatus/config/projects/hkccc-dev.yml --dry-run # preview
+```
+
+Optional YAML keys: `interval` (default `5m`), `protocol` (default `https`), `alert_description` (template with `{name}`, `{url}`, `{group}` placeholders).
 
 ## No CI, Lint, or Test Framework
 

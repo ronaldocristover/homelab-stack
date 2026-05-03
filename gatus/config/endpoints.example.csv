@@ -1,0 +1,6 @@
+name,group,type,url,interval,conditions,alert_description,dns_query_name,dns_query_type,dns_expected_body
+back-end,core,http,https://example.org/,5m,"[STATUS] == 200"|[CERTIFICATE_EXPIRATION] > 48h,"⚠️ **Back-End Unreachable** — HTTP check to https://example.org/ returned non-200 or SSL cert expiring within 48h (group: core)",,,
+monitoring,internal,http,https://example.org/,5m,[STATUS] == 200,"⚠️ **Monitoring Unreachable** — HTTP check to https://example.org/ returned non-200 (group: internal)",,,
+nas,internal,http,https://example.org/,5m,[STATUS] == 200,"⚠️ **NAS Unreachable** — HTTP check to https://example.org/ returned non-200 (group: internal)",,,
+example-dns-query,,dns,8.8.8.8,10s,"[BODY] == 93.184.215.14"|[DNS_RCODE] == NOERROR,"⚠️ **DNS Resolution Failed** — Query for `example.com` A record via 8.8.8.8 returned unexpected result or error",example.com,A,93.184.215.14
+icmp-ping,,icmp,icmp://example.org,10s,[CONNECTED] == true,"⚠️ **Ping Failed** — ICMP ping to example.org failed (host unreachable or packet loss)",,,
