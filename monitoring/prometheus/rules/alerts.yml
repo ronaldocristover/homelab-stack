@@ -1,0 +1,78 @@
+groups:
+  - name: container_alerts
+    interval: 30s
+    rules:
+      - alert: ContainerDown
+        expr: absent(container_last_seen{name!=""}) or (time() - container_last_seen{name!=""}) > 60
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container {{ $labels.name }} is down"
+          description: "Container {{ $labels.name }} has been down for more than 2 minutes."
+
+      - alert: ContainerHighCPU
+        expr: (rate(container_cpu_usage_seconds_total{name!=""}[5m]) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU on container {{ $labels.name }}"
+          description: "Container {{ $labels.name }} CPU usage is {{ printf \"%.1f\" $value }}% (>85%)."
+
+      - alert: ContainerHighMemory
+        expr: (container_memory_usage_bytes{name!=""} / container_spec_memory_limit_bytes{name!=""} * 100) > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory on container {{ $labels.name }}"
+          description: "Container {{ $labels.name }} memory usage is {{ printf \"%.1f\" $value }}% of its limit."
+
+      - alert: ContainerRestarting
+        expr: rate(container_start_time_seconds{name!=""}[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} keeps restarting"
+          description: "Container {{ $labels.name }} has restarted in the last 15 minutes."
+
+  - name: host_alerts
+    interval: 30s
+    rules:
+      - alert: HostHighCPU
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU on host {{ $labels.instance }}"
+          description: "Host CPU usage is {{ printf \"%.1f\" $value }}% (>85%) for 5 minutes."
+
+      - alert: HostHighMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory on host {{ $labels.instance }}"
+          description: "Host memory usage is {{ printf \"%.1f\" $value }}% (>90%)."
+
+      - alert: HostDiskSpaceLow
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|9p|fuse.*|squashfs|devtmpfs",mountpoint!~"/(boot|var/lib/docker|host/.+|init|etc/.+|usr/lib/.+|run/.+|snap/.+|mnt/.+).*"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|9p|fuse.*|squashfs|devtmpfs"})) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk space low on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+          description: "Filesystem {{ $labels.mountpoint }} is {{ printf \"%.1f\" $value }}% full."
+
+      - alert: HostDown
+        expr: up{job="node-exporter"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host {{ $labels.instance }} is down"
+          description: "node-exporter on {{ $labels.instance }} has been unreachable for 2 minutes."

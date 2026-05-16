@@ -1,0 +1,27 @@
+groups:
+  - name: log_alerts
+    interval: 1m
+    rules:
+      - alert: HighErrorLogRate
+        expr: |
+          sum by (container) (
+            count_over_time({container=~".+"} |~ "(?i)(error|fatal|panic|exception)" [5m])
+          ) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error log rate in {{ $labels.container }}"
+          description: "Container {{ $labels.container }} has more than 10 error-level log entries in the last 5 minutes."
+
+      - alert: ContainerLoggingPanic
+        expr: |
+          sum by (container) (
+            count_over_time({container=~".+"} |~ "(?i)(panic|fatal)" [5m])
+          ) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Panic/Fatal log in {{ $labels.container }}"
+          description: "Container {{ $labels.container }} logged a panic or fatal error."

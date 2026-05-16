@@ -1,0 +1,52 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'discord-default'
+  group_by: ['alertname', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers:
+        - severity = "critical"
+      receiver: 'discord-critical'
+      continue: true
+    - matchers:
+        - severity = "warning"
+      receiver: 'discord-default'
+
+receivers:
+  - name: 'discord-default'
+    discord_configs:
+      - webhook_url: __DISCORD_WEBHOOK_URL__
+        send_resolved: true
+        title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }}'
+        message: |-
+          {{ range .Alerts -}}
+          **Severity:** {{ .Labels.severity }}
+          **Summary:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          {{ if .Labels.instance }}**Instance:** {{ .Labels.instance }}{{ end }}
+          {{ if .Labels.container }}**Container:** {{ .Labels.container }}{{ end }}
+          {{ end }}
+
+  - name: 'discord-critical'
+    discord_configs:
+      - webhook_url: __DISCORD_WEBHOOK_URL__
+        send_resolved: true
+        title: '🚨 CRITICAL: {{ .CommonLabels.alertname }}'
+        message: |-
+          {{ range .Alerts -}}
+          **Summary:** {{ .Annotations.summary }}
+          **Description:** {{ .Annotations.description }}
+          {{ if .Labels.instance }}**Instance:** {{ .Labels.instance }}{{ end }}
+          {{ if .Labels.container }}**Container:** {{ .Labels.container }}{{ end }}
+          {{ end }}
+
+inhibit_rules:
+  - source_matchers:
+      - severity = "critical"
+    target_matchers:
+      - severity = "warning"
+    equal: ['alertname', 'instance']
